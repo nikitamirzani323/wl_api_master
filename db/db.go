@@ -58,14 +58,13 @@ func Init() {
 
 	case "postgres":
 		log.Printf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s search_path=%s", dbHost, dbPort, dbUser, dbName, dbPass, dbSchema)
-		DBURL := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s search_path='%s' ", dbHost, dbPort, dbUser, dbName, dbPass, dbSchema)
+		DBURL := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s search_path=%s ", dbHost, dbPort, dbUser, dbName, dbPass, dbSchema)
 		db, err = sql.Open(dbDriver, DBURL)
 	default:
 		DBURL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
 		db, err = sql.Open(dbDriver, DBURL)
 	}
 
-	helpers.ErrorCheck(err)
 	db.SetMaxIdleConns(10)
 	db.SetMaxOpenConns(100)
 	db.SetConnMaxIdleTime(5 * time.Minute)
