@@ -13,7 +13,7 @@ import (
 	"github.com/nikitamirzani323/wl_api_master/models"
 )
 
-const Fieldadmin_home_redis = "LISTADMIN_BACKEND_ISBPANEL"
+const Fieldadmin_home_redis = "LISTADMIN_BACKEND_WL"
 
 func Adminhome(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
@@ -106,45 +106,7 @@ func Adminhome(c *fiber.Ctx) error {
 		})
 	}
 }
-func AdminDetail(c *fiber.Ctx) error {
-	var errors []*helpers.ErrorResponse
-	client := new(entities.Controller_admindetail)
-	validate := validator.New()
-	if err := c.BodyParser(client); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
-	err := validate.Struct(client)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element helpers.ErrorResponse
-			element.Field = err.StructField()
-			element.Tag = err.Tag()
-			errors = append(errors, &element)
-		}
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": "validation",
-			"record":  errors,
-		})
-	}
 
-	result, err := models.Fetch_adminDetail(client.Username)
-	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusBadRequest,
-			"message": err.Error(),
-			"record":  nil,
-		})
-	}
-	return c.JSON(result)
-}
 func AdminSave(c *fiber.Ctx) error {
 	var errors []*helpers.ErrorResponse
 	client := new(entities.Controller_adminsave)
