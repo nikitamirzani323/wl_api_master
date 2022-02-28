@@ -18,34 +18,35 @@ func Fetch_adminHome() (helpers.ResponseAdmin, error) {
 	var obj entities.Model_admin
 	var arraobj []entities.Model_admin
 	var res helpers.ResponseAdmin
-	msg := "Error"
+	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
 
 	sql_select := `SELECT 
 			username , name, idadmin,
-			statuslogin, lastlogin, joindate, 
-			ipaddress, timezone  
+			statuslogin, to_char(COALESCE(lastlogin,now()), 'YYYY-MM-DD HH24:ii:ss') as lastlogin, joindate, 
+			ipaddress, timezone,   
+			createadmin, to_char(COALESCE(createdateadmin,now()), 'YYYY-MM-DD HH24:ii:ss') as createdateadmin, updateadmin, to_char(COALESCE(updatedateadmin,now()), 'YYYY-MM-DD HH24:ii:ss') as updatedateadmin 
 			FROM ` + configs.DB_tbl_admin + ` 
 			ORDER BY lastlogin DESC 
 		`
 
 	row, err := con.QueryContext(ctx, sql_select)
 
-	var no int = 0
 	helpers.ErrorCheck(err)
 	for row.Next() {
-		no += 1
 		var (
-			username_db, name_db, idadminlevel_db                                string
-			statuslogin_db, lastlogin_db, joindate_db, ipaddress_db, timezone_db string
+			username_db, name_db, idadminlevel_db                                  string
+			statuslogin_db, lastlogin_db, joindate_db, ipaddress_db, timezone_db   string
+			createadmin_db, createdateadmin_db, updateadmin_db, updatedateadmin_db string
 		)
 
 		err = row.Scan(
 			&username_db, &name_db, &idadminlevel_db,
 			&statuslogin_db, &lastlogin_db, &joindate_db,
-			&ipaddress_db, &timezone_db)
+			&ipaddress_db, &timezone_db,
+			&createadmin_db, &createdateadmin_db, &updateadmin_db, &updatedateadmin_db)
 
 		helpers.ErrorCheck(err)
 		if statuslogin_db == "Y" {
@@ -54,14 +55,21 @@ func Fetch_adminHome() (helpers.ResponseAdmin, error) {
 		if lastlogin_db == "0000-00-00 00:00:00" {
 			lastlogin_db = ""
 		}
-		obj.Username = username_db
-		obj.Nama = name_db
-		obj.Rule = idadminlevel_db
-		obj.Joindate = joindate_db
-		obj.Timezone = timezone_db
-		obj.Lastlogin = lastlogin_db
-		obj.LastIpaddress = ipaddress_db
-		obj.Status = statuslogin_db
+		create := createadmin_db + ", " + createdateadmin_db
+		update := ""
+		if updateadmin_db != "" {
+			update = updateadmin_db + ", " + updatedateadmin_db
+		}
+		obj.Admin_username = username_db
+		obj.Admin_nama = name_db
+		obj.Admin_rule = idadminlevel_db
+		obj.Admin_joindate = joindate_db
+		obj.Admin_timezone = timezone_db
+		obj.Admin_lastlogin = lastlogin_db
+		obj.Admin_lastIpaddress = ipaddress_db
+		obj.Admin_status = statuslogin_db
+		obj.Admin_create = create
+		obj.Admin_update = update
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
@@ -85,7 +93,7 @@ func Fetch_adminHome() (helpers.ResponseAdmin, error) {
 
 		helpers.ErrorCheck(err)
 
-		objRule.Idrule = idruleadmin_db
+		objRule.Admin_idrule = idruleadmin_db
 		arraobjRule = append(arraobjRule, objRule)
 		msg = "Success"
 	}
@@ -259,17 +267,10 @@ func Save_adminHome(admin, username, password, nama, rule, status, sData string)
 		}
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }

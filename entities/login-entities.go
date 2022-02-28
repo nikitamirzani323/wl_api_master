@@ -7,5 +7,5 @@ type Login struct {
 	Timezone  string `json:"timezone" validate:"required"`
 }
 type Home struct {
-	Page string `json:"page"`
+	Page string `json:"page" validate:"required"`
 }

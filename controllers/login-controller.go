@@ -75,7 +75,9 @@ func CheckLogin(c *fiber.Ctx) error {
 	}
 }
 func Home(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
 	client := new(entities.Home)
+	validate := validator.New()
 	if err := c.BodyParser(client); err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
@@ -84,15 +86,30 @@ func Home(c *fiber.Ctx) error {
 			"record":  nil,
 		})
 	}
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
 
 	user := c.Locals("jwt").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
 	client_username, idruleadmin := helpers.Parsing_Decry(temp_decp, "==")
-	log.Println(client_username)
-	log.Println(idruleadmin)
-	log.Println(client.Page)
+	log.Printf("USERNAME : %s", client_username)
+	log.Printf("RULE : %s", idruleadmin)
+	log.Printf("PAGE : %s", client.Page)
 
 	ruleadmin := models.Get_AdminRule("ruleadmingroup", idruleadmin)
 	flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
