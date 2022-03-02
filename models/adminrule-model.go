@@ -16,7 +16,7 @@ func Fetch_adminruleHome() (helpers.Response, error) {
 	var obj entities.Model_adminruleall
 	var arraobj []entities.Model_adminruleall
 	var res helpers.Response
-	msg := "Error"
+	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
@@ -29,10 +29,8 @@ func Fetch_adminruleHome() (helpers.Response, error) {
 
 	row, err := con.QueryContext(ctx, sql_select)
 
-	var no int = 0
 	helpers.ErrorCheck(err)
 	for row.Next() {
-		no += 1
 		var (
 			idadmin_db, ruleadmingroup_db string
 		)
@@ -41,8 +39,8 @@ func Fetch_adminruleHome() (helpers.Response, error) {
 
 		helpers.ErrorCheck(err)
 
-		obj.Idadmin = idadmin_db
-		obj.Ruleadmingroup = ruleadmingroup_db
+		obj.Adminrule_idadmin = idadmin_db
+		obj.Adminrule_rule = ruleadmingroup_db
 		arraobj = append(arraobj, obj)
 		msg = "Success"
 	}
@@ -75,7 +73,6 @@ func Save_adminrule(admin, idadmin, rule, sData string) (helpers.Response, error
 			flag_insert, msg_insert := Exec_SQL(sql_insert, configs.DB_tbl_admingroup, "INSERT", idadmin)
 
 			if flag_insert {
-				flag = true
 				msg = "Succes"
 				log.Println(msg_insert)
 			} else {
@@ -96,7 +93,6 @@ func Save_adminrule(admin, idadmin, rule, sData string) (helpers.Response, error
 		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_admingroup, "UPDATE", rule, idadmin)
 
 		if flag_update {
-			flag = true
 			msg = "Succes"
 			log.Println(msg_update)
 		} else {
@@ -104,17 +100,10 @@ func Save_adminrule(admin, idadmin, rule, sData string) (helpers.Response, error
 		}
 	}
 
-	if flag {
-		res.Status = fiber.StatusOK
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	} else {
-		res.Status = fiber.StatusBadRequest
-		res.Message = msg
-		res.Record = nil
-		res.Time = time.Since(render_page).String()
-	}
+	res.Status = fiber.StatusOK
+	res.Message = msg
+	res.Record = nil
+	res.Time = time.Since(render_page).String()
 
 	return res, nil
 }

@@ -13,9 +13,35 @@ import (
 	"github.com/nikitamirzani323/wl_api_master/models"
 )
 
-const Fieldadminrule_home_redis = "LISTADMINRULE_BACKEND_ISBPANEL"
+const Fieldadminrule_home_redis = "LISTADMINRULE_BACKEND_WL"
 
 func Adminrulehome(c *fiber.Ctx) error {
+	var errors []*helpers.ErrorResponse
+	client := new(entities.Controller_adminrule)
+	validate := validator.New()
+	if err := c.BodyParser(client); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": err.Error(),
+			"record":  nil,
+		})
+	}
+	err := validate.Struct(client)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element helpers.ErrorResponse
+			element.Field = err.StructField()
+			element.Tag = err.Tag()
+			errors = append(errors, &element)
+		}
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"status":  fiber.StatusBadRequest,
+			"message": "validation",
+			"record":  errors,
+		})
+	}
 
 	var obj entities.Responseredis_adminruleall
 	var arraobj []entities.Responseredis_adminruleall

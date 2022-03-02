@@ -1,8 +1,12 @@
 package entities
 
 type Model_adminruleall struct {
-	Idadmin        string `json:"adminrule_idadmin"`
-	Ruleadmingroup string `json:"adminrule_rule"`
+	Adminrule_idadmin string `json:"adminrule_idadmin"`
+	Adminrule_rule    string `json:"adminrule_rule"`
+}
+
+type Controller_adminrule struct {
+	Master string `json:"master" validate:"required"`
 }
 
 type Controller_adminrulesave struct {
